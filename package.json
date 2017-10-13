@@ -16,6 +16,7 @@
     "commander": "^2.9.0",
     "csv": "^1.1.0",
     "inquirer": "^2.0.0",
+    "quickly-copy-file": "^1.0.0",
     "sendgrid": "^4.7.1"
   },
   "repository": {

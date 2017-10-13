@@ -7,6 +7,7 @@ const fs = require('fs');
 const inquirer = require('inquirer');
 const path = require('path');
 const { execSync } = require('child_process');
+const url = require('url');
 
 program.version("0.1.1").parse(process.argv);
 
@@ -54,8 +55,10 @@ inquirer.prompt(questions).then((answers) => {
   const channelsComponent = {
     composerTag: cardName + '-composer',
     viewerTag: cardName + '-viewer',
+    iconUrl: './icon.png'
   };
   fs.writeFileSync('channels-component.json', JSON.stringify(channelsComponent, null, 2));
+  fs.createReadStream(path.join(__dirname, "./placeholder.png")).pipe(fs.createWriteStream('icon.png'));
   const bower = {
     "name": cardName,
     "description": answers[1],
@@ -133,7 +136,7 @@ inquirer.prompt(questions).then((answers) => {
           services: Object,             // .upload(file) => Promise<String>
           author: Object,               // .imageUrl, .handle, .name
           // Following populated by this composer and available to container
-          ready: Boolean,
+          stateReady: Boolean,
           recommendedImageUrl: String,
           recommendedTitle: String,
           recommendedText: String,        
@@ -154,8 +157,8 @@ inquirer.prompt(questions).then((answers) => {
         const isReady = this.$.contents.textContent.trim().length > 0;
         this.dispatchEvent(new CustomEvent('shared-state-changed', { bubbles: true, composed: true, detail: { } }));
         if (isReady !== this.ready) {
-          this.set('ready', isReady);
-          this.dispatchEvent(new CustomEvent('ready-changed', { bubbles: true, composed: true, detail: { ready: this.ready } }));
+          this.set('stateReady', isReady);
+          this.dispatchEvent(new CustomEvent('state-ready-changed', { bubbles: true, composed: true, detail: { ready: this.ready } }));
         }
       }
     }
