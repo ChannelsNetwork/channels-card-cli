@@ -113,8 +113,7 @@ inquirer.prompt(questions).then((answers) => {
   const cardTitle = capitalize(cardName);
   fs.writeFileSync('demo/index.html', demoIndexContent);
   const cardContent = `
-<link rel="import" href="../paper-button/paper-button.html">
-
+<link rel="import" href="../polymer/polymer-element.html">  
 <dom-module id="${cardName}-composer">
   <template>
     <style>

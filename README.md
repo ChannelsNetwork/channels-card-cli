@@ -1,4 +1,4 @@
-# channels-cli
+s# channels-card-cli
 
 ## TLDR
 
