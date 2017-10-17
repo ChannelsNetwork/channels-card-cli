@@ -28,6 +28,22 @@ const questions = [
     name: "description",
     message: "Description:",
     default: ''
+  }, {
+    type: "input",
+    name: "royalty",
+    message: "What royalty do you want to charge publishers (as % of card revenue)?",
+    default: "5",
+    validate: (input) => {
+      return /^[0-9]+$/.test(input) && Number(input) >= 0 && Number(input) <= 99;
+    }
+  }, {
+    type: "input",
+    name: "address",
+    message: "What is your Channels account address?  (Get this from your Channels Account page.)",
+    default: "",
+    validate: (input) => {
+      return input.length === 0 || /^[0-9a-zA-Z\=]{28}$/.test(input);
+    }
   }
 ];
 
@@ -57,6 +73,10 @@ inquirer.prompt(questions).then((answers) => {
     viewerTag: cardName + '-viewer',
     iconUrl: './icon.png'
   };
+  if (answers.address) {
+    channelsComponent.developerAddress = answers.address;
+    channelsComponent.royalty = (Number(answers.royalty) / 100).toFixed(2);
+  }
   fs.writeFileSync('channels-component.json', JSON.stringify(channelsComponent, null, 2));
   fs.createReadStream(path.join(__dirname, "./placeholder.png")).pipe(fs.createWriteStream('icon.png'));
   const bower = {
