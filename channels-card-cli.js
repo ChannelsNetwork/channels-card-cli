@@ -39,10 +39,10 @@ const questions = [
   }, {
     type: "input",
     name: "address",
-    message: "What is your Channels account address?  (Get this from your Channels Account page.)",
+    message: "To what account should royalties be paid?  (Use the Account Address on your Channels Account page.)",
     default: "",
     validate: (input) => {
-      return input.length === 0 || /^[0-9a-zA-Z\=]{28}$/.test(input);
+      return input.length === 0 || /^[0-9a-zA-Z]{25,30}\=$/.test(input);
     }
   }
 ];
@@ -154,31 +154,54 @@ inquirer.prompt(questions).then((answers) => {
         return {
           // Following populated by container
           services: Object,             // .upload(file) => Promise<String>
-          author: Object,               // .imageUrl, .handle, .name
-          // Following populated by this composer and available to container
-          stateReady: Boolean,
-          recommendedImageUrl: String,
-          recommendedTitle: String,
-          recommendedText: String,        
-          recommendedLinkUrl: String        
+          author: Object                // .imageUrl, .handle, .name
         };
+      }   
+      
+      connectedCallback() {
+        super.connectedCallback();
+        // initialize your composer here
       }
-      getSharedState() {
-        // Replace this with the appropriate code to return the state information that will be passed to the
-        // viewer when the card is opened
+
+      get isReady() {
+        return true;  // return false until the user has provided minimum acceptable configuration
+      }
+
+      // When your "ready" state changes, use the following, where "rs" is your new ready state.
+      // It should match what is returned by isReady()
+      // this.dispatchEvent(new CustomEvent('state-ready-change', { bubbles: true, composed: true, detail: { ready: rs } }));
+
+      // This will be called after you are ready to provide the default information used
+      // to display the card in a feed.
+      get summary() {
+        // Replace this with something that returns the default imageUrl, title, and text
+        // to be used when displaying this card in the feed.  To get an imageUrl, you can
+        // use this.services.upload(file).then(...)
         return {
-          properties: {
-            content: this.$.contents.textContent
-          },
-          collections: {}
+          imageURL: null,  // replace this with a URL to use for the card
+          title: null,     // replace this with the default title for this card
+          text: null       // replace this with the default subtitle for the card
         };       
       }
-      _onContentChanged() {
-        const isReady = this.$.contents.textContent.trim().length > 0;
-        this.dispatchEvent(new CustomEvent('shared-state-changed', { bubbles: true, composed: true, detail: { } }));
-        if (isReady !== this.ready) {
-          this.set('stateReady', isReady);
-          this.dispatchEvent(new CustomEvent('state-ready-changed', { bubbles: true, composed: true, detail: { ready: this.ready } }));
+
+      // The information you will provide as "sharedState" to the viewer when a card is opened.
+      // This MUST be in the form of an object containing a "properties" map and a 
+      // "collections" map, where the collections map contains named arrays.
+      get sharedState() {
+        let sharedProperties = {
+          message: "hello world!",
+          property2: {subprop1: 100, subprop2: "abc"}
+        };
+        let sharedCollections = {};
+        sharedCollections.examples = [];
+        sharedCollections.examples.push({
+          id: '1',
+          field1: 'f1',
+          field2: {a: 1, b: true, c: "abc"}
+        });
+        return {
+          properties: sharedProperties,
+          collections: sharedCollections
         }
       }
     }
@@ -189,7 +212,7 @@ inquirer.prompt(questions).then((answers) => {
 <dom-module id="${cardName}-viewer">
   <template>
     <div>
-      <div>[[sharedState.properties.content]]</div>
+      <div>[[sharedState.properties.message]]</div>
     </div>
   </template>
   <script>
@@ -202,6 +225,12 @@ inquirer.prompt(questions).then((answers) => {
           author: Object,         // .handle, .name, .imageUrl
           user: Object            // .handle, .name, .imageUrl
         };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        // initialize your viewer here using properties and/or collections
+        // in this.sharedState
       }
     }
     window.customElements.define(${cardTitle}Viewer.is, ${cardTitle}Viewer);
