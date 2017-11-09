@@ -1,4 +1,4 @@
-s# channels-card-cli
+# channels-card-cli
 
 ## TLDR
 
@@ -26,7 +26,7 @@ polymer serve
 
 ## Introduction
 
-[Channels](https://channels.cc) is a new marketplace for digital content.  Anyone is free to post content that they will be paid for, or for which they are willing to pay users to read.  Content is bought and sold in "cards".  Each card is based on a card design that is optimized for presenting content of a specific type.  
+[Channels](https://channels.cc) is a new marketplace for digital content.  Anyone is free to post content that they will be paid for, or for which they are willing to pay users to read.  Content is bought and sold in "cards".  Each card is based on a card design that is optimized for presenting content of a specific type.
 
 ## Concepts
 
@@ -36,11 +36,15 @@ We choose to implement our own cards using [Polymer](https://www.polymer-project
 
 ## Creating your own Card:  Instructions
 
+If you would first like to see an example of a card, visit the [card-hello-world](https://github.com/ChannelsNetwork/card-hello-world) project.  This is a trivial, but fully functional card design.
+
 ### Step 1:  Install Dependencies
 
 In order to create your own card here, we start with some tools you will need.  If you don't already have Node installed, do that first:  [install Node](https://nodejs.org/en/download/)
 
 You will also need to have a [GitHub](https://github.com/) account and your favorite git client installed such as [git-scm](https://git-scm.com/downloads).
+
+You can use any text editor and the command line to do all of your card development.  But we prefer to use a IDE such as [Visual Studio Code](https://code.visualstudio.com/).
 
 Now you are ready to install the other dependencies.  (Note that you may need to use `sudo` on some machines.)
 
@@ -56,7 +60,7 @@ Go to github.com, sign in, and click "New Repository".  In the "Repository name"
 
 Your repository **must be public** so that all Channels clients will be able to access it when loading your card.
 
-You can leave .gitignore as **None**.  We'll populate that later.  Choose the license you want controlling how others can use your card.  And check the box to create a README file.
+You can leave .gitignore as **None**.  We'll populate that later.  Choose the license you want controlling how others can use your card.  And check the box to **create a README file**.
 
 Click **Create repository** and then copy the URL for your repository and paste it into your git client to clone your repository to your machine.
 
@@ -72,7 +76,9 @@ channels-card init
 
 This will ask you for a name and description of your card.  The name will typically match the name of your GitHub repository, such as **sallys-first-card**.
 
-Then your directory will be populated with files and folders needed for your first card.  Your card is almost ready to use!  Skip the next couple of steps if you want to try the card as it is defined by default.
+You will also be asked for a royalty percentage and your Channels address.  You can omit these if you do not wish to collect a royalty when others use your card.  But if you'd like to get paid, you first set the royalty rate (a percentage of the revenue earned by the publisher using a card based on your card design).  If in doubt, we recommend 5%.  To get paid, you'll need your Channels account address.  You can find that on the Account page when you are signed into Channels.  (Make sure that you create an identity for your Channels account and that you include an email address so that if you ever lose your account, you'll be able to recover it, and not lose any money that you've made.  Without it, we have no way to help you recover your earnings.)
+
+When you are finished this step, the scaffolding will take several seconds to populate your directory with files and folders needed for your card.  Your card is almost ready to use!  Skip the next couple of steps if you want to try the card as it is defined by default.
 
 The most important file in your card project is the one that defines the card components and its name will match your project name, such as `sallys-first-card.html`.  This is where your components are defined using HTML and Javascript.  In addition, there is a `channels-component.json` file that tells the Channels client how to use your card, including the tag names to use for composer and viewer.  The `bower.json` file describes your project, especially its dependencies on other components.  Most of the remaining files and folders are for documentation and to support development.
 
@@ -116,17 +122,51 @@ The template is the HTML markup determining how the component appears in the web
 
 The script has two parts.  There is a `class` definition followed by a call to register that class with the browser as a new component using `window.customElements.define`.  `customElements` is a standard part of the window object in newer browsers.  This tells the browser what to do when it finds a tag in a web page with the name specified here.  You'll see that the scaffolding has named your component based on your project name followed by `-composer`.  That's why it is important that your project name is unique.  Otherwise, it may "collide" with another Channels card created by someone else with the same name.
 
+#### Composer API
+
+To work properly with Channels, your composer component must conform to certain conventions.  The scaffolding initializes your composer so that it should be easy for you to remember.
+
+First, Channels will provide assistance to your composer via two properties that you declare.
+
+**services** is a javascript object containing methods you may need.  Currently, the only method on this object is **upload** which you can use to upload a file to the Channels server.  You pass it a [file object](https://developer.mozilla.org/en-US/docs/Web/API/File) and it returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will eventually return a URL to that file in the cloud.
+
+**author** is a javascript object containing three properties about the user who is composing the card:  **imageURL**, **name**, **handle**, and **address**.
+
+Second, your composer must implement certain methods.
+
+**get isReady()** is a property accessor that returns a boolean to indicate whether the composer has received enough information from the user to consider the composing step complete.
+
+**get sharedState()** is a property access that returns an object containing the information that will be passed to the viewer component when the resulting card is being shown to a consumer.  This object must conform to a specific structure.  It must contain a **properties** member which is a map of serializable javascript values (string, boolean, number, object).  It must also contain a **collections** member which is a map of serializable javascript arrays, where each array contains serializable javascript objects.
+
+**get summary()** is a property accessor that returns a javascript object containing three members.  **imageURL** is the URL of an image that the composer suggests should be used at the top of the resulting card when it appears in a feed.  **title** is a string suggested as the title for the card.  And **text** is a string suggested as the subtitle for the card.  All are optional.  The user composing the card will have an opportunity to change any of these.
+
+Third, your composer must fire an event whenever its "ready" state changes.  This is done by invoking code like this:
+
+```javascript
+this.dispatchEvent(new CustomEvent('state-ready-change', { bubbles: true, composed: true, detail: { ready: newReadyValue } }));
+```
+
 ### Step 6:  Customize your Viewer
 
-The second component in your definition is the viewer.  It is another web component definition similar to the composer.  But its job is to display the message that was composed to everyone on the channel.  For more sophisticated cards, the viewer is really like a full application, since it can allow viewers to interact with the card, and even collaborate with other channel participants through that card.
+The second component in your definition is the viewer.  It is another web component definition similar to the composer.  But its job is to display the card that was composed to consumers viewing the card.  For more sophisticated cards, the viewer is really like a full application, since it can allow viewers to interact with the card, and even collaborate with other channel participants through that card.
 
-Polymer enables "data binding" to make it easy to use information stored in a property within your markup so that you don't have to write extra code to manipulate the DOM elements in your markup.  For example, suppose that the composer sends a message, `this.send({ message: "hello world" });`.  The viewer can then expect that there is a `data.message` string in its properties.  It could display that message in the viewer with markup that looks like:
+Polymer enables "data binding" to make it easy to use information stored in a property within your markup so that you don't have to write extra code to manipulate the DOM elements in your markup.  For example, suppose that the composer includes a property called "message".  The viewer can then expect that there is a `sharedData.properties.message` string in its properties.  It could display that message in the viewer with markup that looks like:
 
 ```html
-<div>[[data.message]]</div>
+<div>[[sharedData.properties.message]]</div>
 ```
 
 Read more about data binding at [Polymer](https://www.polymer-project.org/2.0/docs/devguide/data-binding).
+
+#### Viewer API
+
+Your viewer component is instantiated each time a consumer opens the card.  The component will be given information using properties.
+
+**sharedState** is a javascript object containing **properties** and **collections** maps that correspond to those that provided when the card was composed.
+
+**author** is a javascript object describing the user who composed this card including **imageURL**, **name**, **handle**, and **address**.
+
+**user** is a javascript object describing the user who is viewing this card including **imageUrl**, **name**, **handle**, and **address**.  Note that these users may not have registered an identity, and therefore only the **address** member may be populated.
 
 ### Step 7:  Test your Card
 
@@ -154,7 +194,7 @@ Your composer should now show up at the bottom of the channel.  Use it and send 
 
 ### Step 10:  Release
 
-When yours to your card works to your satisfaction, go to the GitHub repository and create a release.  For example, you might set the release version to **1.0.0**.  If and when you make changes bump the last digit for bug fixes and the second last digit when there are feature changes.  Avoid changing the first digit.
+When your card works to your satisfaction, go to the GitHub repository and create a release.  For example, you might set the release version to **1.0.0**.  If and when you make changes bump the last digit for bug fixes and the second last digit when there are feature changes.  Avoid changing the first digit in most cases.
 
 <!-- ## Interactive Cards
 
