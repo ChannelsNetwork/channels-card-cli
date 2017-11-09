@@ -130,7 +130,7 @@ First, Channels will provide assistance to your composer via two properties that
 
 **services** is a javascript object containing methods you may need.  Currently, the only method on this object is **upload** which you can use to upload a file to the Channels server.  You pass it a [file object](https://developer.mozilla.org/en-US/docs/Web/API/File) and it returns a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that will eventually return a URL to that file in the cloud.
 
-**author** is a javascript object containing three properties about the user who is composing the card:  **imageURL**, **name**, **handle**, and **address**.
+**author** is a javascript object containing three properties about the user who is composing the card:  **imageUrl**, **name**, **handle**, and **address**.
 
 Second, your composer must implement certain methods.
 
@@ -164,7 +164,7 @@ Your viewer component is instantiated each time a consumer opens the card.  The 
 
 **sharedState** is a javascript object containing **properties** and **collections** maps that correspond to those that provided when the card was composed.
 
-**author** is a javascript object describing the user who composed this card including **imageURL**, **name**, **handle**, and **address**.
+**author** is a javascript object describing the user who composed this card including **imageUrl**, **name**, **handle**, and **address**.
 
 **user** is a javascript object describing the user who is viewing this card including **imageUrl**, **name**, **handle**, and **address**.  Note that these users may not have registered an identity, and therefore only the **address** member may be populated.
 
