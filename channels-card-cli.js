@@ -204,6 +204,14 @@ inquirer.prompt(questions).then((answers) => {
           collections: sharedCollections
         }
       }
+
+      // To make your card searchable, you need to provide text representing all of the content
+      // on the card.  The text in your summary is automatically searchable so you don't need to
+      // add it here.  Don't worry about formatting (although you should avoid markup tags if any).  
+      // This text is used for search indexing only.
+      get searchText() {
+        return null;
+      }
     }
     window.customElements.define(${cardTitle}Composer.is, ${cardTitle}Composer);
   </script>
