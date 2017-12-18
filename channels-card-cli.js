@@ -91,7 +91,7 @@ inquirer.prompt(questions).then((answers) => {
       "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
       "web-component-tester": "Polymer/web-component-tester#^6.0.0",
       "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
-      "channels-card": "^0.1.2"
+      "channels-card": "^0.1.3"
     },
     "resolutions": {
       "polymer": "^2.0.0"

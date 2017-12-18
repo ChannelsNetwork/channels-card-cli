@@ -1,6 +1,6 @@
 {
   "name": "channels-card-cli",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A command line tool for creating Channels cards",
   "main": "channels-card-cli.js",
   "bin": {
