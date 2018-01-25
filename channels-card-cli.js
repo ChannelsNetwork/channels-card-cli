@@ -34,7 +34,7 @@ const questions = [
     message: "What royalty do you want to charge publishers (as % of card revenue)?",
     default: "5",
     validate: (input) => {
-      return /^[0-9]+$/.test(input) && Number(input) >= 0 && Number(input) <= 99;
+      return /^[0-9\.]+$/.test(input) && Number(input) >= 0 && Number(input) <= 99;
     }
   }, {
     type: "input",
@@ -42,7 +42,7 @@ const questions = [
     message: "To what account should royalties be paid?  (Use the Account Address on your Channels Account page.)",
     default: "",
     validate: (input) => {
-      return input.length === 0 || /^[0-9a-zA-Z]{25,30}\=$/.test(input);
+      return input.length === 0 || /^[0-9a-zA-Z\/\=]{25,30}\=$/.test(input);
     }
   }
 ];
@@ -154,12 +154,14 @@ inquirer.prompt(questions).then((answers) => {
         return {
           // Following populated by container
           services: Object,             // .upload(file) => Promise<String>
+          initialState: Object,         // to support later editing
           author: Object                // .imageUrl, .handle, .name
         };
       }   
       
       connectedCallback() {
         super.connectedCallback();
+        this.$.contents.value = this.$.initialState.properties ? this.$.initialState.properties.message : null;
         // initialize your composer here
       }
 
@@ -178,7 +180,8 @@ inquirer.prompt(questions).then((answers) => {
         // to be used when displaying this card in the feed.  To get an imageUrl, you can
         // use this.services.upload(file).then(...)
         return {
-          imageURL: null,  // replace this with a URL to use for the card
+          imageURL: null,  // returned from this.services.upload
+          imageId: null,   // returned from this.services.upload
           title: null,     // replace this with the default title for this card
           text: null       // replace this with the default subtitle for the card
         };       
@@ -199,9 +202,11 @@ inquirer.prompt(questions).then((answers) => {
           field1: 'f1',
           field2: {a: 1, b: true, c: "abc"}
         });
+        let sharedFiles = {};  // populate this based on this.services.upload response using sharedFiles[fileId] = { key: "<your_key>" };
         return {
           properties: sharedProperties,
           collections: sharedCollections
+          files: sharedFiles
         }
       }
 
